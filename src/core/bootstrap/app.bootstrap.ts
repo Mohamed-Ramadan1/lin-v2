@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 export function configureApplication(app: INestApplication): void {
@@ -8,6 +9,7 @@ export function configureApplication(app: INestApplication): void {
       contentSecurityPolicy: false,
     }),
   );
+  app.use(cookieParser());
   app.enableCors({
     credentials: true,
     origin: true,

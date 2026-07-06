@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class HealthCheckResponseDto {
-  @ApiProperty({ example: 'ok' })
-  status: 'ok';
+  @ApiProperty({ enum: ['ok', 'error', 'shutting_down'], example: 'ok' })
+  status: 'ok' | 'error' | 'shutting_down';
 
-  @ApiProperty({ example: '2026-05-23T00:00:00.000Z' })
-  timestamp: string;
+  @ApiProperty({ example: { memory_heap: { status: 'up' } } })
+  info: Record<string, unknown>;
 
-  @ApiProperty({ example: 12.34 })
-  uptime: number;
+  @ApiProperty({ example: {} })
+  error: Record<string, unknown>;
+
+  @ApiProperty({ example: { memory_heap: { status: 'up' } } })
+  details: Record<string, unknown>;
 }
