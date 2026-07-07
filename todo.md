@@ -1,6 +1,6 @@
-DEFINE RBAC (Role Based Access Control) and implement it in the application
+Auth
 
-s3 setup
+Users
 
 email , sms sending setup with twillo
 

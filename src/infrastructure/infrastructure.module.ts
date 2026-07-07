@@ -4,6 +4,7 @@ import { CacheModule } from './cache/cache.module';
 import { LoggingModule } from './logging/logging.module';
 import { SecurityJwtModule } from './security/jwt/jwt.module';
 import { QueueModule } from './queue/queue.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { QueueModule } from './queue/queue.module';
     LoggingModule,
     SecurityJwtModule,
     QueueModule,
+    StorageModule,
   ],
   exports: [
     DatabaseModule,
@@ -19,6 +21,7 @@ import { QueueModule } from './queue/queue.module';
     LoggingModule,
     SecurityJwtModule,
     QueueModule,
+    StorageModule,
   ],
 })
 export class InfrastructureModule {}
