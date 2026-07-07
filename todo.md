@@ -1,7 +1,3 @@
-<!-- Connected to the db (postgress) -->
-
-setup the db ( redis )
-
 JWT For authentication and authorization
 
 configure the bullmq (and make it ready to serving use )

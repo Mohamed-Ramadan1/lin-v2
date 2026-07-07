@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { configureApplication } from './core/bootstrap/app.bootstrap';
 import { toNumber } from './core/config/env.utils';
@@ -9,6 +10,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   configureApplication(app);
   setupSwagger(app);
 
