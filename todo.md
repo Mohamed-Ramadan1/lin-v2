@@ -2,9 +2,9 @@
 
 setup the db ( redis )
 
-configure the bullmq (and make it ready to serving use )
-
 JWT For authentication and authorization
+
+configure the bullmq (and make it ready to serving use )
 
 DEFINE RBAC (Role Based Access Control) and implement it in the application
 
