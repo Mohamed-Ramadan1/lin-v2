@@ -1,6 +1,3 @@
-
-configure the bullmq (and make it ready to serving use )
-
 DEFINE RBAC (Role Based Access Control) and implement it in the application
 
 s3 setup
