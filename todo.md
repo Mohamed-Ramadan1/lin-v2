@@ -1,6 +1,6 @@
-Insatll reuirements
+<!-- Connected to the db (postgress) -->
 
-setup the db (postgress , redis )
+setup the db ( redis )
 
 configure the bullmq (and make it ready to serving use )
 
