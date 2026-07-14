@@ -32,7 +32,7 @@ export function setupSwagger(app: INestApplication): void {
 
   SwaggerModule.setup('docs', app, document, {
     customCss: swaggerDarkTheme,
-    customSiteTitle: 'Lin API Docs',
+    customSiteTitle: 'Noviq API Docs',
     swaggerOptions: {
       displayRequestDuration: true,
       operationsSorter: 'method',

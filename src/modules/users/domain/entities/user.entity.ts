@@ -1,4 +1,10 @@
-import { Entity, PrimaryColumn, CreateDateColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  CreateDateColumn,
+  Column,
+  Index,
+} from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -16,6 +22,10 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, select: false })
   passwordHash!: string;
+
+  @Index()
+  @Column({ type: 'boolean', default: true })
+  isActive!: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
