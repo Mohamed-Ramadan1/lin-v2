@@ -17,6 +17,7 @@ import { AllExceptionsFilter } from '../common/filters/http-exception.filter';
       envFilePath: getEnvFilePaths(),
       isGlobal: true,
     }),
+
     ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
