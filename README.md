@@ -1787,5 +1787,3 @@ From `todo.md`:
 > **Document Version:** 1.0  
 > **Generated:** 2026-07-15  
 > **Repository:** `noviq-api` — The backend powering the Noviq learning platform.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
