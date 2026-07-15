@@ -12,3 +12,18 @@ export function toNumber(
 
   return Number.isFinite(parsed) ? parsed : fallback;
 }
+
+export function toBoolean(
+  value: boolean | string | undefined,
+  fallback: boolean,
+): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (value === undefined) {
+    return fallback;
+  }
+
+  return value === 'true' || value === '1';
+}

@@ -15,8 +15,8 @@ const swaggerDarkTheme = [
 
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
-    .setTitle('Lin API')
-    .setDescription('API documentation for Lin v2')
+    .setTitle('Noviq-api')
+    .setDescription('Noviq single place to manage your entaiyer life')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -32,7 +32,7 @@ export function setupSwagger(app: INestApplication): void {
 
   SwaggerModule.setup('docs', app, document, {
     customCss: swaggerDarkTheme,
-    customSiteTitle: 'Lin API Docs',
+    customSiteTitle: 'Noviq API Docs',
     swaggerOptions: {
       displayRequestDuration: true,
       operationsSorter: 'method',

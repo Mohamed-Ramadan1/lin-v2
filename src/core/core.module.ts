@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import {
@@ -8,6 +8,7 @@ import {
   DEFAULT_THROTTLE_TTL_MS,
 } from '../common/constants/app.constants';
 import { getEnvFilePaths, toNumber } from './config/env.utils';
+import { AllExceptionsFilter } from '../common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { getEnvFilePaths, toNumber } from './config/env.utils';
       envFilePath: getEnvFilePaths(),
       isGlobal: true,
     }),
+
     ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
@@ -36,9 +38,17 @@ import { getEnvFilePaths, toNumber } from './config/env.utils';
   ],
   providers: [
     {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
   ],
   exports: [ConfigModule, ScheduleModule, ThrottlerModule],
 })
