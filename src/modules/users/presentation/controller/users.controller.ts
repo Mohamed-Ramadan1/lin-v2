@@ -1,11 +1,10 @@
 import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 
-import { Roles } from '@common/decorators/roles.decorator';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { UserRole } from '@common/enums/user-role.enum';
+// Common imports
+import { AuthGuard, RolesGuard, Roles, UserRole } from '@common/index';
 
 @Controller('')
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class UsersController {
   @Get()
