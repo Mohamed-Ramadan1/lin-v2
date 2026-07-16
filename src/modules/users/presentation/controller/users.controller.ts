@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 
-// Common imports
+// Common module  imports
 import { AuthGuard, RolesGuard, Roles, UserRole } from '@common/index';
 
 @Controller('')
