@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
@@ -9,7 +13,7 @@ export function configureApplication(app: INestApplication): void {
       contentSecurityPolicy: false,
     }),
   );
-  app.use(cookieParser());
+  app.use(cookieParser);
   app.enableCors({
     credentials: true,
     origin: true,
@@ -21,4 +25,9 @@ export function configureApplication(app: INestApplication): void {
       whitelist: true,
     }),
   );
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'api/v1',
+  });
 }
