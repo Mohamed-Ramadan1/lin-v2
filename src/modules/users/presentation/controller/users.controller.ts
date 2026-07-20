@@ -1,9 +1,16 @@
 import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 // Common module  imports
-import { AuthGuard, RolesGuard, Roles, UserRole } from '@common/index';
+import {
+  AuthGuard,
+  RolesGuard,
+  Roles,
+  UserRole,
+  Protected,
+} from '@common/index';
 
 @Controller('')
+@Protected()
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class UsersController {

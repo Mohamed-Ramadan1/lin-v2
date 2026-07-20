@@ -1,10 +1,21 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../../application/services/auth.service';
 import { RegisterDto, LoginDto } from '../dto/index';
+import { AuthGuard, Public } from '@common/index';
 
 @Controller('')
+@Public()
+@UseGuards(AuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(

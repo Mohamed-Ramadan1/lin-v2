@@ -13,7 +13,7 @@ export function configureApplication(app: INestApplication): void {
       contentSecurityPolicy: false,
     }),
   );
-  app.use(cookieParser);
+  app.use(cookieParser());
   app.enableCors({
     credentials: true,
     origin: true,
@@ -28,6 +28,6 @@ export function configureApplication(app: INestApplication): void {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
-    prefix: 'api/v1',
+    prefix: 'api/v',
   });
 }
