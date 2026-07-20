@@ -9,4 +9,5 @@ export interface UsersRepository {
   create(user: Partial<User>): Promise<User>;
   update(id: string, user: Partial<User>): Promise<User>;
   delete(id: string): Promise<void>;
+  userExists(email: string): Promise<boolean>;
 }

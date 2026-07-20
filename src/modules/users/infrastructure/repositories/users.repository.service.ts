@@ -34,4 +34,9 @@ export class UsersRepositoryService implements UsersRepository {
   async delete(id: string): Promise<void> {
     await this.repo.delete(id);
   }
+
+  async userExists(email: string): Promise<boolean> {
+    const count = await this.repo.count({ where: { email } });
+    return count > 0;
+  }
 }

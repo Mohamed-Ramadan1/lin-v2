@@ -6,6 +6,8 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
 import { Match } from '@common/decorators/match.decorator';
 
 export class RegisterDto {
@@ -28,6 +30,12 @@ export class RegisterDto {
   })
   @IsEmail()
   @IsNotEmpty()
+  @Transform(({ value }): unknown => {
+    if (typeof value === 'string') {
+      return value.toLowerCase().trim();
+    }
+    return value as unknown;
+  })
   @MaxLength(255)
   email!: string;
 
