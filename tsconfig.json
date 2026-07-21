@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -18,7 +19,8 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@common/*": ["./src/common/*"],
-      "@modules/*": ["./src/modules/*"]
+      "@modules/*": ["./src/modules/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"]
     }
   },
   "exclude": ["node_modules", "dist", "coverage"]

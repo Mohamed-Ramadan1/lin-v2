@@ -66,18 +66,24 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     key: string,
     value: T,
     ttlMs = CACHE_DEFAULT_TTL_MS,
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
-      await this.redis.set(
+      const result = await this.redis.set(
         key,
         JSON.stringify(value),
         'PX',
         this.resolveTtl(ttlMs),
       );
+
+      if (result !== 'OK') {
+        throw new Error(`Failed to write cache key "${key}"`);
+      }
+      return result === 'OK';
     } catch (error) {
       this.logger.warn(
         `Failed to write cache key "${key}": ${this.getErrorMessage(error)}`,
       );
+      return false;
     }
   }
 
