@@ -3,7 +3,7 @@
 > **Project Codename:** `lin-v2`  
 > **Version:** `0.0.1`  
 > **License:** UNLICENSED (Private)  
-> **Last Updated:** 2026-07-15
+> **Last Updated:** 2026-07-23
 
 ---
 
@@ -68,6 +68,12 @@
 | Language        | TypeScript | 5.7.3   |
 | Framework       | NestJS     | 11.x    |
 | Package Manager | npm        | —       |
+
+### Email
+
+| Package       | Purpose                    |
+| ------------- | -------------------------- |
+| `nodemailer`  | SMTP email sending         |
 
 ### Core Framework Dependencies
 
@@ -345,7 +351,28 @@ noviq-api/
 │   │   │       ├── storage-object.type.ts
 │   │   │       └── upload-options.type.ts
 │   │   │
-│   │   ├── mail/                     #     Email service (stub)
+│   │   ├── mail/                     #     Email sending & templates
+│   │   │   ├── mail.module.ts
+│   │   │   ├── config/
+│   │   │   │   └── mail.config.ts
+│   │   │   ├── constants/
+│   │   │   │   └── mail.constants.ts
+│   │   │   ├── processors/
+│   │   │   │   └── email.processor.ts
+│   │   │   ├── services/
+│   │   │   │   ├── email-sender.service.ts
+│   │   │   │   └── mail-template.service.ts
+│   │   │   ├── templates/
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── base.template.ts
+│   │   │   │   ├── welcome.template.ts
+│   │   │   │   ├── password-reset.template.ts
+│   │   │   │   └── email-verification.template.ts
+│   │   │   └── types/
+│   │   │       ├── email-names.type.ts
+│   │   │       ├── mail-config.type.ts
+│   │   │       ├── mail-template.type.ts
+│   │   │       └── send-email-options.type.ts
 │   │   └── telemetry/                #     Observability (stub)
 │   │
 │   ├── modules/                      #   ── BUSINESS MODULES ──
@@ -585,8 +612,10 @@ InfrastructureModule
   ├── CacheModule           (Redis via ioredis)          ★ @Global()
   ├── LoggingModule         (Winston via nest-winston)
   ├── SecurityJwtModule     (JWT via @nestjs/jwt)
+  ├── SecurityPasswordModule (bcrypt)
   ├── QueueModule           (BullMQ via @nestjs/bullmq)
-  └── StorageModule         (AWS S3 via @aws-sdk)
+  ├── StorageModule         (AWS S3 via @aws-sdk)
+  └── MailModule            (Nodemailer + templates)
 ```
 
 ### 7.2 Database Module (`database/`)
@@ -907,12 +936,116 @@ type UploadOptions = {
 };
 ```
 
-### 7.8 Future Infrastructure (Stubs)
+### 7.8 Mail Module (`mail/`)
 
-| Directory    | Intended Purpose                              |
-| ------------ | --------------------------------------------- |
-| `mail/`      | Email service (SendGrid, SES, or custom SMTP) |
-| `telemetry/` | OpenTelemetry / metrics / tracing             |
+Nodemailer-based email service with BullMQ-backed reliable delivery and an HTML template engine.
+
+#### Architecture
+
+```
+Caller (e.g., AuthService)
+      │
+      │  queueService.add('email', EmailName.WELCOME, { to, subject, emailName, templateData })
+      │
+      ▼
+BullMQ 'email' queue ──── retries (3 attempts, exponential backoff)
+      │
+      ▼
+EmailProcessor.process(job)
+      │
+      ├── html set? → use as-is
+      │   else → MailTemplateService.render(emailName, templateData)
+      │
+      ▼
+EmailSenderService.send({ ...job.data, html })
+      │
+      ▼
+Nodemailer → SMTP
+```
+
+#### Configuration (`config/mail.config.ts`)
+
+Builds a nodemailer `Transporter` from environment variables:
+
+| Env Variable     | Default            | Description                  |
+| ---------------- | ------------------ | ---------------------------- |
+| `EMAIL_HOST`     | `localhost`        | SMTP server host             |
+| `EMAIL_PORT`     | `587`              | SMTP server port             |
+| `EMAIL_USER`     | —                  | SMTP auth username           |
+| `EMAIL_PASSWORD` | —                  | SMTP auth password           |
+| `EMAIL_FROM`     | `noreply@noviq.com` | Default sender address      |
+| `EMAIL_SECURE`   | `false`            | Use TLS (set `true` for 465) |
+
+Supports both authenticated and unauthenticated SMTP connections.
+
+#### `EmailSenderService` (`services/email-sender.service.ts`)
+
+| Method                   | Description                        |
+| ------------------------ | ---------------------------------- |
+| `send(options)`          | Send a single email via nodemailer |
+| `sendMany(emails)`       | Send multiple emails in sequence   |
+
+**`SendEmailOptions`:**
+
+| Field         | Type                           | Description                         |
+| ------------- | ------------------------------ | ----------------------------------- |
+| `to`          | `string \| string[]`           | Recipient(s)                        |
+| `subject`     | `string`                       | Email subject line                  |
+| `html`        | `string` (optional)            | Pre-rendered HTML body              |
+| `text`        | `string` (optional)            | Plain-text fallback                 |
+| `from`        | `string` (optional)            | Override default sender             |
+| `cc`          | `string \| string[]` (opt)     | Carbon copy                          |
+| `bcc`         | `string \| string[]` (opt)     | Blind carbon copy                    |
+| `attachments` | `array` (optional)             | File attachments                    |
+| `emailName`   | `EmailName`                    | Which email template to render      |
+| `templateData`| `TemplateDataMap[EmailName]`   | Data injected into the template     |
+
+#### `EmailProcessor` (`processors/email.processor.ts`)
+
+BullMQ worker consumer bound to the `email` queue via `@Processor(EMAIL_QUEUE_NAME)`. On each job:
+
+1. Checks if `html` is already set — uses it directly
+2. Otherwise calls `MailTemplateService.render()` with `emailName` + `templateData`
+3. Passes the resolved HTML to `EmailSenderService.send()`
+4. If sending fails, BullMQ retries automatically (3 attempts, exponential backoff)
+
+#### `MailTemplateService` (`services/mail-template.service.ts`)
+
+Renders email templates by name. Template names are typed via the `EmailName` enum:
+
+| `EmailName`            | Template file                     | Data interface                    |
+| ---------------------- | --------------------------------- | --------------------------------- |
+| `WELCOME`              | `welcome.template.ts`             | `WelcomeTemplateData`             |
+| `PASSWORD_RESET`       | `password-reset.template.ts`      | `PasswordResetTemplateData`       |
+| `EMAIL_VERIFICATION`   | `email-verification.template.ts`  | `EmailVerificationTemplateData`   |
+
+To add a new template: add to `EmailName` enum → create `*.template.ts` file → register in `templates/index.ts`.
+
+#### Template System (`templates/`)
+
+Each template is a pure function that takes typed data and returns an HTML string. All templates share a common `baseTemplate()` layout with:
+
+- Gradient brand accent bar (`#6366f1` → `#a855f7`)
+- Responsive card layout (560px max-width)
+- Inter font family with system fallbacks
+- Mobile breakpoint at 480px
+- App name and copyright year derived automatically from constants
+
+#### Constants (`constants/mail.constants.ts`)
+
+| Constant            | Value                    | Description            |
+| ------------------- | ------------------------ | ---------------------- |
+| `MAIL_APP_NAME`     | `'Noviq'`                | Brand name in emails   |
+| `MAIL_DEFAULT_HOST` | `'localhost'`            | Default SMTP host      |
+| `MAIL_DEFAULT_PORT` | `587`                    | Default SMTP port      |
+| `MAIL_DEFAULT_FROM` | `'noreply@noviq.com'`    | Default sender address |
+| `MAIL_TRANSPORTER`  | `'MAIL_TRANSPORTER'`     | DI injection token     |
+
+### 7.9 Future Infrastructure (Stubs)
+
+| Directory    | Intended Purpose                          |
+| ------------ | ----------------------------------------- |
+| `telemetry/` | OpenTelemetry / metrics / tracing         |
 
 ---
 
@@ -1304,7 +1437,9 @@ QueueService.add(queueName, jobName, data)
     ↓
 BullMQ (Redis DB 1)
     ↓
-Worker processes (future implementation)
+Worker processes
+    ├── EmailProcessor (MailModule) — consumes 'email' queue
+    └── Notification (future)
     ↓
 Job handlers (email, notifications, etc.)
 ```
@@ -1722,6 +1857,17 @@ From `todo.md`:
 | `JWT_ISSUER`         | `noviq-api`    | JWT issuer claim          |
 | `JWT_AUDIENCE`       | `noviq-client` | JWT audience claim        |
 
+### Email (Nodemailer)
+
+| Variable         | Default              | Description            |
+| ---------------- | -------------------- | ---------------------- |
+| `EMAIL_HOST`     | `localhost`          | SMTP server host       |
+| `EMAIL_PORT`     | `587`                | SMTP server port       |
+| `EMAIL_USER`     | —                    | SMTP auth username     |
+| `EMAIL_PASSWORD` | —                    | SMTP auth password     |
+| `EMAIL_FROM`     | `noreply@noviq.com`  | Default sender address |
+| `EMAIL_SECURE`   | `false`              | Use TLS (`true` for 465) |
+
 ### Logging
 
 | Variable        | Default | Description          |
@@ -1762,6 +1908,7 @@ From `todo.md`:
 | `JWT_CONFIG`        | `Symbol.for('JWT_CONFIG')`        | Security/JWT |
 | `S3_CLIENT`         | `Symbol.for('S3_CLIENT')`         | Storage      |
 | `S3_STORAGE_CONFIG` | `Symbol.for('S3_STORAGE_CONFIG')` | Storage      |
+| `MAIL_TRANSPORTER`  | `'MAIL_TRANSPORTER'`              | Mail         |
 
 ## Appendix B: Git Workflow
 
