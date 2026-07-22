@@ -13,19 +13,24 @@ import {
   PasswordService,
   TokenService,
   CacheService,
+  EmailName,
 } from '@infrastructure/index';
 import { randomUUID, createHash } from 'crypto';
+import { QueueService, EMAIL_QUEUE_NAME } from '@infrastructure/index';
 import ms from 'ms';
 
 @Injectable()
 export class AuthService {
   private readonly refreshTokenTtlMs: number;
+  private readonly emailQueueName = EMAIL_QUEUE_NAME;
   constructor(
     @Inject(USERS_REPOSITORY) private readonly usersRepository: UsersRepository,
 
     private readonly passwordService: PasswordService,
     private readonly tokenService: TokenService,
     private readonly cacheService: CacheService,
+
+    private readonly queueService: QueueService,
     private readonly configService: ConfigService,
     @Inject('REFRESH_TOKEN_KEY_PREFIX')
     private readonly refreshTokenKey: string = 'refresh_token',
@@ -50,6 +55,16 @@ export class AuthService {
         name: registerDto.name,
         email: registerDto.email,
         passwordHash,
+      });
+
+      await this.queueService.add(this.emailQueueName, 'send-email', {
+        to: createdUser.email,
+        subject:
+          'Welcome to Noviq platform place you can organize your life inside. ',
+        emailName: EmailName.WELCOME,
+        templateData: {
+          userName: createdUser.name,
+        },
       });
 
       return await this.issueTokens(createdUser.id, createdUser.roles);

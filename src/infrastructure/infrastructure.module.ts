@@ -6,6 +6,7 @@ import { SecurityJwtModule } from './security/jwt/jwt.module';
 import { SecurityPasswordModule } from './security/password/password.module';
 import { QueueModule } from './queue/queue.module';
 import { StorageModule } from './storage/storage.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StorageModule } from './storage/storage.module';
     SecurityPasswordModule,
     QueueModule,
     StorageModule,
+    MailModule,
   ],
   exports: [
     DatabaseModule,
@@ -25,6 +27,7 @@ import { StorageModule } from './storage/storage.module';
     SecurityPasswordModule,
     QueueModule,
     StorageModule,
+    MailModule,
   ],
 })
 export class InfrastructureModule {}
