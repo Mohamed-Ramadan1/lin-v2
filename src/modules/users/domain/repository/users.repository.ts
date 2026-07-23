@@ -6,7 +6,10 @@ export interface UsersRepository {
   findAll(): Promise<User[]>;
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
+  /** Returns the user WITH the password hash — only for auth operations. */
+  findByEmailWithPassword(email: string): Promise<User | null>;
   create(user: Partial<User>): Promise<User>;
   update(id: string, user: Partial<User>): Promise<User>;
   delete(id: string): Promise<void>;
+  userExists(email: string): Promise<boolean>;
 }

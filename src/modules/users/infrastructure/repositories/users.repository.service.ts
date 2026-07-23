@@ -22,6 +22,14 @@ export class UsersRepositoryService implements UsersRepository {
     return this.repo.findOne({ where: { email } });
   }
 
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .addSelect('user.passwordHash')
+      .getOne();
+  }
+
   async create(user: Partial<User>): Promise<User> {
     return this.repo.save(user);
   }
@@ -33,5 +41,10 @@ export class UsersRepositoryService implements UsersRepository {
 
   async delete(id: string): Promise<void> {
     await this.repo.delete(id);
+  }
+
+  async userExists(email: string): Promise<boolean> {
+    const count = await this.repo.count({ where: { email } });
+    return count > 0;
   }
 }

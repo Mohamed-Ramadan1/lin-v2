@@ -3,7 +3,7 @@ import {
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 export function configureApplication(app: INestApplication): void {

@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
 import { IS_PROTECTED_KEY } from '../decorators/protected.decorator';
+import { AuthenticatedUser } from '../types/authenticated-user.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,6 +21,11 @@ export class AuthGuard implements CanActivate {
      * if it has the protected metadata then the if statement will be false and the request will be passed to the next step which is the user validation step.
      */
     if (!protectedRequest) return true;
+
+    const user: AuthenticatedUser = context.switchToHttp().getRequest<Request>()
+      .user as AuthenticatedUser;
+
+    console.log('user from auth guard', user);
 
     return true;
   }

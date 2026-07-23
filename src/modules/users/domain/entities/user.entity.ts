@@ -6,6 +6,8 @@ import {
   Index,
 } from 'typeorm';
 
+import { UserRole } from '@common/index';
+
 @Entity('users')
 export class User {
   @PrimaryColumn({
@@ -26,6 +28,15 @@ export class User {
   @Index()
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
+
+  // Option A: native Postgres array of an enum
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    array: true,
+    default: [UserRole.USER],
+  })
+  roles!: UserRole[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
