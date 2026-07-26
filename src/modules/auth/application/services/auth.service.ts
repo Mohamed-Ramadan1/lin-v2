@@ -94,8 +94,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
-    // TODO: issue JWT tokens
-    return { userId: user.id };
+    return await this.issueTokens(user.id, user.roles);
   }
 
   // Helper reusable methods.
