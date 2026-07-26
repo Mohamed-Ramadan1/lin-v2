@@ -49,12 +49,16 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(
+  async login(
+    @Res({ passthrough: true }) res: Response,
     @Body()
     loginDto: LoginDto,
   ) {
-    // await this.authService.login(loginDto);
-    console.log(loginDto);
+    const { accessToken } = await this.authService.login(loginDto);
+    this.setRequestCookies(res, accessToken);
+    return {
+      message: 'User login success.',
+    };
   }
 
   private setRequestCookies(res: Response, accessToken: string): void {
